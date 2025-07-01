@@ -27,9 +27,10 @@ public class LoginConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        InterceptorRegistration registration = registry.addInterceptor(new UserLoginInterceptor());
-        registration.addPathPatterns("/**");
-        registration.excludePathPatterns(
+        // 用户登录拦截器
+        InterceptorRegistration loginRegistration = registry.addInterceptor(new UserLoginInterceptor());
+        loginRegistration.addPathPatterns("/**");
+        loginRegistration.excludePathPatterns(
                 "/toLogin",
                 "/login",
                 "/callback",
@@ -37,5 +38,6 @@ public class LoginConfig implements WebMvcConfigurer {
                 "/**/*.js",
                 "/**/*.css"
         );
+
     }
 }
