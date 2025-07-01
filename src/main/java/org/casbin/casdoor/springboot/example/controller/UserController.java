@@ -13,11 +13,16 @@
 // limitations under the License.
 package org.casbin.casdoor.springboot.example.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.casbin.casdoor.config.CasdoorConfig;
 import org.casbin.casdoor.config.CasdoorConfiguration;
 import org.casbin.casdoor.entity.CasdoorUser;
 import org.casbin.casdoor.service.CasdoorUserService;
 import org.casbin.casdoor.util.http.CasdoorResponse;
+import org.casbin.casdoor.util.http.HttpClient;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -65,5 +70,17 @@ public class UserController {
     public CasdoorResponse deleteUser(String name) throws Exception {
         CasdoorUser user = casdoorUserService.getUser(name);
         return casdoorUserService.deleteUser(user);
+    }
+
+    @RequestMapping("getUserProxy")
+    public Object getUserProxy(@RequestParam String name) throws IOException {
+        CasdoorConfig config = casdoorConfiguration;
+        String url = String.format("%s/api/get-user?id=built-in/%s&clientId=%s&clientSecret=%s",
+                config.getEndpoint(), name, config.getClientId(), config.getClientSecret());
+
+        String response = HttpClient.syncGet(url);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper.readValue(response, Object.class);
     }
 }
