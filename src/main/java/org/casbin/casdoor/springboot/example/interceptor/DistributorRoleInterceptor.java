@@ -14,6 +14,7 @@
 package org.casbin.casdoor.springboot.example.interceptor;
 
 import org.casbin.casdoor.entity.CasdoorUser;
+import org.casbin.casdoor.service.CasdoorAuthService;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,22 +22,32 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * @author Yixiang Zhao (@seriouszyx)
+ * 分销商角色拦截器
  */
-public class UserLoginInterceptor implements HandlerInterceptor {
+public class DistributorRoleInterceptor implements HandlerInterceptor {
+
+    private final CasdoorAuthService casdoorAuthService;
+    
+    public DistributorRoleInterceptor(CasdoorAuthService casdoorAuthService) {
+        this.casdoorAuthService = casdoorAuthService;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
         CasdoorUser user = (CasdoorUser) session.getAttribute("casdoorUser");
-        if (user != null&&user.isAdmin()) {
+        
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/toLogin");
+            return false;
+        }
+        
+        // 使用CasdoorAuthService验证用户角色
+        if (user.getRoles() != null && user.getRoles().contains("distributor")) {
             return true;
         }
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().write("<script>alert('你不是管理员');</script>"); // 发送JavaScript alert弹窗
-        response.getWriter().write("<meta http-equiv='refresh' content='0;url=" + request.getContextPath() + "toLogin' />");
-//        response.sendRedirect(request.getContextPath() + "toLogin");
+        
+        response.sendRedirect(request.getContextPath() + "/");
         return false;
     }
-}
+} 
