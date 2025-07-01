@@ -29,10 +29,14 @@ public class UserLoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
         CasdoorUser user = (CasdoorUser) session.getAttribute("casdoorUser");
-        if (user != null) {
+        if (user != null&&user.isAdmin()) {
             return true;
         }
-        response.sendRedirect(request.getContextPath() + "toLogin");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write("<script>alert('你不是管理员');</script>"); // 发送JavaScript alert弹窗
+        response.getWriter().write("<meta http-equiv='refresh' content='0;url=" + request.getContextPath() + "toLogin' />");
+//        response.sendRedirect(request.getContextPath() + "toLogin");
         return false;
     }
 }
