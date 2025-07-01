@@ -2,14 +2,105 @@
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
 <head>
     <meta charset="UTF-8">
-    <title>toLogin</title>
+    <title>分销系统登录</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        }
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 50px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .login-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .login-button:hover {
+            background-color: #45a049;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .features {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            text-align: left;
+        }
+        .feature {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .feature h3 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <h1>Click to login</h1>
+<div class="login-container">
+    <div class="logo">🏪</div>
+    <h1>欢迎登录分销系统</h1>
+    <p class="description">
+        本系统使用 Casdoor 提供单点登录和权限管理功能，为分销商和管理员提供不同的功能入口。
+    </p>
+    
     <form action="/login">
-        <input type="submit" value="Login" />
+        <button class="login-button" type="submit">使用 Casdoor 登录</button>
     </form>
+    
+    <div class="features">
+        <div class="feature">
+            <h3>分销商</h3>
+            <p>访问销售报表、订单管理、客户管理等功能</p>
+        </div>
+        <div class="feature">
+            <h3>管理员</h3>
+            <p>访问系统设置、用户管理、角色权限等功能</p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 分销系统示例 · 技术支持：Casdoor</p>
+    </footer>
 </div>
 </body>
 </html>

@@ -2,31 +2,241 @@
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
 <head>
     <meta charset="UTF-8">
-    <title>index</title>
+    <title>分销系统示例</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .user-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #e2e2e2;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.8em;
+        }
+        .role-badge.distributor {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .role-badge.admin {
+            background-color: #f44336;
+            color: white;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .action-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .action-card.restricted {
+            background-color: #f9f9f9;
+            position: relative;
+        }
+        .action-card.restricted::after {
+            content: "需要权限";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #f44336;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.7em;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367D6;
+        }
+        .user-data {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow: auto;
+        }
+        
+        /* 错误消息弹窗样式 */
+        .error-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            display: none;
+        }
+        .error-popup.show {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+        }
+        .error-popup .close-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <h1>title</h1>
-    <h1>Hello <span th:text="${session.casdoorUser.name}"></span></h1>
-    <button th:attr="onclick=|window.location.href='/logout'|">Sign Out</button><br />
-    <button th:attr="onclick=|getAccount('${session.casdoorUser.name}')|" type="button">Get Account</button>
-    <div id="res"></div>
+<!-- 错误消息弹窗 -->
+<div id="errorPopup" class="error-popup">
+    <span id="errorMessage"></span>
+    <span class="close-btn" onclick="closeErrorPopup()">×</span>
 </div>
-<script>
+
+<div class="container">
+    <div class="header">
+        <h1>分销系统演示</h1>
+        <button th:attr="onclick=|window.location.href='/logout'|">退出登录</button>
+    </div>
+    
+    <div class="user-info">
+        <h2>欢迎, <span th:text="${session.casdoorUser.name}"></span>!</h2>
+        <p><strong>显示名称:</strong> <span th:text="${session.casdoorUser.displayName}"></span></p>
+        <p><strong>邮箱:</strong> <span th:text="${session.casdoorUser.email}"></span></p>
+        <p><strong>角色:</strong> 
+            <span th:if="${session.casdoorUser.roles == null || session.casdoorUser.roles.isEmpty()}">无角色</span>
+            <span th:each="role : ${session.casdoorUser.roles}" th:class="${'role-badge ' + role}" th:text="${role}"></span>
+        </p>
+    </div>
+    
+    <h3>功能入口</h3>
+    <div class="actions">
+        <div class="action-card" onclick="window.location.href='/'">
+            <h3>首页</h3>
+            <p>系统首页，所有用户可访问</p>
+        </div>
+        <div class="action-card restricted" onclick="window.location.href='/distributor'">
+            <h3>分销商功能</h3>
+            <p>仅分销商角色用户可访问</p>
+        </div>
+        <div class="action-card restricted" onclick="window.location.href='/admin'">
+            <h3>管理员功能</h3>
+            <p>仅管理员角色用户可访问</p>
+        </div>
+    </div>
+    
+    <h3>用户数据</h3>
+    <button th:attr="onclick=|getAccount('${session.casdoorUser.name}')|" type="button">获取账号详情</button>
+    <div id="res" class="user-data"></div>
+</div>
+
+<script th:inline="javascript">
     function getAccount(name) {
         $.ajax({
-            url: '/getUser?name=' + name,
+            url: '/getUserProxy?name=' + name,
             type: 'get',
             dataType: 'json',
             success: function (data) {
-                $("#res").text(JSON.stringify(data))
+                $("#res").html(JSON.stringify(data, null, 2).replace(/\n/g, '<br>').replace(/\s\s/g, '&nbsp;&nbsp;'));
             },
             error: function () {
-                alert('Timeout!');
+                alert('请求超时或发生错误!');
             }
         })
     }
+    
+    // 显示错误弹窗
+    function showErrorPopup(message) {
+        var popup = document.getElementById('errorPopup');
+        var messageElement = document.getElementById('errorMessage');
+        if (popup && messageElement) {
+            messageElement.textContent = message;
+            popup.classList.add('show');
+            // 5秒后自动关闭
+            setTimeout(function() {
+                closeErrorPopup();
+            }, 5000);
+        }
+    }
+    
+    // 关闭错误弹窗
+    function closeErrorPopup() {
+        var popup = document.getElementById('errorPopup');
+        if (popup) {
+            popup.classList.remove('show');
+        }
+    }
+    
+    // 获取URL参数
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // 页面加载时检查错误参数
+    window.onload = function() {
+        // 检查服务器返回的错误消息
+        var errorMessage = /*[[${errorMessage}]]*/ null;
+        if (errorMessage) {
+            showErrorPopup(errorMessage);
+        }
+        
+        // 检查URL参数中的错误类型
+        var errorType = getUrlParameter('error');
+        if (errorType === 'no_distributor_role') {
+            showErrorPopup('您没有分销商角色，无法访问该页面');
+        } else if (errorType === 'no_admin_role') {
+            showErrorPopup('您没有管理员角色，无法访问该页面');
+        }
+    };
 </script>
 </body>
 </html>

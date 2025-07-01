@@ -15,9 +15,12 @@ package org.casbin.casdoor.springboot.example.controller;
 
 import org.casbin.casdoor.entity.CasdoorUser;
 import org.casbin.casdoor.service.CasdoorAuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -28,19 +31,43 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class RoleController {
     
+    private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
+    
     @Resource
     private CasdoorAuthService casdoorAuthService;
     
     @RequestMapping("/distributor")
-    @ResponseBody
-    public String distributor(HttpSession session) {
+    public String distributor(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        logger.info("访问 /distributor 端点");
+        
+        CasdoorUser user = (CasdoorUser) session.getAttribute("casdoorUser");
+
+        logger.info("user：{}",user);
+        // 使用CasdoorAuthService验证用户角色
+        if ((user != null && user.getTitle() != null && user.getTitle().contains("distributor"))||(user != null && user.getTitle() != null && user.getTitle().contains("root"))) {
+            logger.info("用户 {} 有分销商角色，显示分销商页面", user.getName());
+            model.addAttribute("user", user);
+            return "distributor";
+        }
+        logger.info("userTitle:{}",user.getTitle());
+        logger.warn("用户 {} 没有分销商角色，显示无权限信息", user != null ? user.getName() : "未登录");
+        return "redirect:/?error=no_distributor_role";
+    }
+    
+    @RequestMapping("/admin")
+    public String admin(HttpSession session, Model model) {
+        logger.info("访问 /admin 端点");
+        
         CasdoorUser user = (CasdoorUser) session.getAttribute("casdoorUser");
         
         // 使用CasdoorAuthService验证用户角色
-        if (user != null && user.getRoles() != null && user.getRoles().contains("distributor")) {
-            return "分销商页面";
+        if (user != null && user.getTitle() != null && user.getTitle().contains("root")) {
+            logger.info("用户 {} 有管理员角色，显示管理员页面", user.getName());
+            model.addAttribute("user", user);
+            return "root";
         }
         
-        return "无权限访问，需要分销商角色";
+        logger.warn("用户 {} 没有管理员角色，显示无权限信息", user != null ? user.getName() : "未登录");
+        return "redirect:/?error=no_admin_role";
     }
 }
